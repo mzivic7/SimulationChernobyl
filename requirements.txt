@@ -1,0 +1,5 @@
+numpy
+pygame
+pyinstaller
+
+https://note.nkmk.me/en/python-pip-install-requirements/

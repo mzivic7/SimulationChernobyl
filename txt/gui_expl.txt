@@ -1,0 +1,38 @@
+Start/Stop 
+ simulation
+On/Off Sound
+
+Record all 
+ data
+Show recorded
+ data
+Change sim 
+ speed
+Save current 
+ state
+Load from file
+
+Settings
+
+Help
+
+About
+
+Quit
+
+Anti aliasing
+
+Cancle
+
+Save settings
+
+Change volume
+
+Change sim step
+
+Back
+
+Show all elements
+ names
+Open link in
+ browser

@@ -1,0 +1,5 @@
+Wlcome to chernobyl simulation! 
+This is help screen. 
+Click on back button to go to main GUI.
+Mouseover on each element to show explanation for it.
+Inside Core
