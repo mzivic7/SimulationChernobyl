@@ -5,7 +5,7 @@ import time
 import datetime
 import webbrowser
 
-# --todo-- #
+# --Todo-- #
 ##### recorder, show
 ### simstep = counter_step
 ### auto scale graph
@@ -16,35 +16,39 @@ import webbrowser
 ##### second graph ?
 ### icon
 
+# --Input variables-- #
+version = "Pre-alpha 0.1.5"
+date = "(18.12.2021)"
+update = 30   # screen update frequency
+simspeed = 1.0   # simulation speed multiplyer
+
 # --Initial variables-- #
-version = "Pre-alpha 0.1.4"
-date = "(5.10.2021)"
 windowx, windowy = 1280, 720   # window width, window height 
 graphxstart = 0   # where starts graph area on x axis
 graphxlength, graphheight = 360, 180   # graph length and height
-counter_step = 0.1   # simulation step size, 0.1 = 1px
-simstep = 1   # simulation step size
-update = 30   # screen update frequency
-simspeed = 1.0   # simulation speed multiplyer
+counter_step = 0.1   # simulation step size, 0.1 = 1px ###
+simstep = 1   # simulation step size ###
+sound_volume = 5   # initial sound volume ###
 counter = 0   # simulation time
-sound_volume = 10   # sound volume ###
 antial = False   # anti aliasing
-sound = True   # is sound on ###
-pause = True   # is program paused
+sound = True   # sound on/off ###
+pause = True   # program paused
 settings = False   # are settings open
-whelp = False   # is help window open
-whelp_all = False   # is full diagram showed
-wabout = False   # is about window open
-set_exist = False   # is there settings file
+whelp = False   # help window open
+whelp_all = False   # full diagram show
+wabout = False   # about window open
+set_exist = False   # settings file
 welcome = False   # print welcome text
-textout = "Hello!"   # textout example
 textoutcolor = (0,0,0)   # textout color example
 textout1, textout2, textout3 = "", "", ""   # text buffer
 textoutcolor1, textoutcolor2, textoutcolor3 = (0,0,0), (0,0,0), (0,0,0)   # text color buffer
 memtextout = ""   # to store previous text
-text_width = 45   # max text width
+text_width = 60   # max text width
+lang = "eng"   # simulation language
+lang_num = 1   # language number in languages file
 
-#welcome = False   # is welcome screen open
+textout = "Hello!"   # textout example
+
 # --Functions-- #
 # mouseover button effect, buttons are numerated by position
 def mousover(x,y,color):
@@ -60,7 +64,7 @@ def mousover_coord(x,y,color):
 def mouseovergroup():
     # button location      main set                  settings set
     mousover(1,0,grey)   # sound switch            # - sound
-    mousover(6,0,grey)   # X                       # X
+    mousover(6,0,grey)   # X                       # languages
     mousover(7,0,grey)   # save                    # recording values
     mousover(8,0,grey)   # settings                # config database
     mousover(9,0,lred)   # quit                    # cancle
@@ -81,7 +85,8 @@ def load_settings():
     antial = eval(setmatrix[0])   # set antial
     sound_volume = int(setmatrix[1])   # set sound volume
     simstep = int(setmatrix[2])   # set simstep
-    return antial, sound_volume, simstep
+    lang = setmatrix[3]   # set simulation language
+    return antial, sound_volume, simstep, lang
 
 # prints text in box with word wrapping, with separator for bold tittle
 def text_wrap(surface, text, pos, font, tittle_font, color=(0,0,0)):
@@ -134,12 +139,11 @@ def connect_lines(surface, coords_graph, coords_text, color=(0,0,0)):
 
 # --Load settings-- #
 try:
-    antial, sound_volume, simstep = load_settings()
+    antial, sound_volume, simstep, lang = load_settings()
     set_exist = True
 except:
-    setfile = open("data/settings.txt","w+")
-    # create settings file
-    setfile.write(str(antial)+' '+str(sound_volume)+' '+str(simstep)+' ') # write to settings file ### add more
+    setfile = open("data/settings.txt","w+")   # create settings file
+    setfile.write(str(antial)+' '+str(sound_volume)+' '+str(simstep)+' '+lang+' ')   # write to settings file
     setfile.close()   # close file
     whelp = True   # Show help
     welcome = True   # print welcome text
@@ -147,24 +151,25 @@ except:
 # load matrices containing names, mousover and center coords for help screen
 moverbox = np.loadtxt("data/coords.txt", dtype='int', delimiter=',')
 rods_moverbox = np.loadtxt("data/rods_coords.txt", dtype='int', delimiter=',')
-graph_names_l = np.loadtxt("txt/graph_coords_l.txt", dtype=object, delimiter=',')
-graph_names_r = np.loadtxt("txt/graph_coords_r.txt", dtype=object, delimiter=',')
-graph_names_rods = np.loadtxt("txt/graph_coords_rods.txt", dtype=object, delimiter=',')
+graph_names_l = np.loadtxt("txt/"+lang+"/graph_coords_l.txt", dtype=object, delimiter=',')
+graph_names_r = np.loadtxt("txt/"+lang+"/graph_coords_r.txt", dtype=object, delimiter=',')
+graph_names_rods = np.loadtxt("txt/"+lang+"/graph_coords_rods.txt", dtype=object, delimiter=',')
+languages = np.loadtxt("txt/languages.txt", dtype='str')   # languages list
 
 # load texts:
-texts = open("txt/texts.txt")   # open file containing texts
+texts = open("txt/"+lang+"/texts.txt")   # open file containing texts
 textsarr = texts.readlines()   # store them in matrix
 texts.close()   # close file
-expl = open("txt/expl.txt")   # open file containing explanations
+expl = open("txt/"+lang+"/expl.txt")   # open file containing explanations
 explarr = expl.readlines()   # store them in matrix
 expl.close()   # close file
-gui_expl = open("txt/gui_expl.txt")   # open file containing gui explanations
+gui_expl = open("txt/"+lang+"/gui_expl.txt")   # open file containing gui explanations
 gui_explarr = gui_expl.readlines()   # store them in matrix
 gui_expl.close()   # close file
-rods_expl = open("txt/rods_expl.txt")   # open file containing rods explanations
+rods_expl = open("txt/"+lang+"/rods_expl.txt")   # open file containing rods explanations
 rods_explarr = rods_expl.readlines()   # store them in matrix
 rods_expl.close()   # close file
-fabout_txt= open("txt/about.txt")   # open file containing about text
+fabout_txt= open("txt/"+lang+"/about.txt")   # open file containing about text
 about_txt = fabout_txt.readlines()   # store it in matrix
 fabout_txt.close()   # close file
 about_txt[0] = about_txt[0].rstrip() + " " + version
@@ -200,7 +205,7 @@ lred  = (255,140,140)
 red   = (255,0,0)
 lime  = (0,255,0)
 
-# --Initial matrixs-- #
+# --Initial matrix-- #
 val = np.zeros([int((graphxlength)/(counter_step*10)),4])   # graph buffer matrix ### G
 val0 = np.zeros([int((graphxlength)/(counter_step*10)),2])   # graph empty matrix
 
@@ -212,85 +217,79 @@ while run:
             # --Key setup-- #
             if e.key == pygame.K_ESCAPE: run = False  # if "escape" key is pressed, close program
             if e.key == pygame.K_p:   # if "P" key is pressed:
-                if pause == False: pause = True   # if it is not paused, pause it 
+                if pause is False: pause = True   # if it is not paused, pause it 
                 else: pause = False  # if it is paused, unpause it
                 
         # -- Button engine-- #
         mouse = pygame.mouse.get_pos()   # get mouse position
-        # main menu
-        if settings == False and whelp == False and wabout == False:
-            # start /stop
-            if 177 < mouse[0] < 207 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN:
-                if pause == False: pause = True    # pause
-                else: pause = False   # unpause
-                if pause == True: textout, textoutcolor = "Paused", red   # just example ###
-                if pause == False: textout, textoutcolor = "Unpaused", lime   # just example ###
-            # sound
-            if 208 < mouse[0] < 238 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN:
-                if sound == False: sound = True    # unmute
-                else: sound = False   # mute
-            # simulation speed minus
-            if 239 < mouse[0] < 269 and 32 < mouse[1] < 62 and e.type == pygame.MOUSEBUTTONDOWN:
-                if simspeed >= 0.15:   # if simulation speed is over minimal:
-                    if simspeed <= 1.2: simspeed -= 0.1   # if simspeed is bellow 1.2 decrease by 0.1
-                    if simspeed > 1.2: simspeed -= 0.2   #if simspeed is above 1.2 decrease by 0.2
-                    pygame.time.set_timer(pygame.USEREVENT, int(100/simspeed))   # update simspeed
-            # simulation speed plus
-            if 332 < mouse[0] < 362 and 32 < mouse[1] < 62 and e.type == pygame.MOUSEBUTTONDOWN:
-                if simspeed <= 9.9:
-                    if simspeed < 1.2: simspeed += 0.1
-                    if simspeed >= 1.2: simspeed += 0.2
-                    pygame.time.set_timer(pygame.USEREVENT, int(100/simspeed))
-            if 425 < mouse[0] < 455 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN:   # switch to settings
-                settings, pause = True, True
-            # help
-            if 425 < mouse[0] < 455 and 32 < mouse[1] < 62 and e.type == pygame.MOUSEBUTTONDOWN: whelp, pause = True, True
-            # about
-            if 456 < mouse[0] < 486 and 32 < mouse[1] < 62 and e.type == pygame.MOUSEBUTTONDOWN: wabout, pause = True, True
-            if 456 < mouse[0] < 486 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN:   # quit
-                run = False
-                #### exit ask to save
-        # settings
-        if settings == True  and whelp == False and wabout == False:   
-            if 456 < mouse[0] < 486 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN:   # cancle settings
-                settings = False
-                antial, sound_volume, simstep = load_settings()
-            if 456 < mouse[0] < 486 and 32 < mouse[1] < 62 and e.type == pygame.MOUSEBUTTONDOWN:   # save settings
-                settings = False
-                setfile = open("data/settings.txt","w+")   # open settings file
-                setfile.write(str(antial)+' '+str(sound_volume)+' '+str(simstep)+' ')   # write to settings file ### add more
-                setfile.close()   # close file
-            if 177 < mouse[0] < 207 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN:    # turn on antialias
-                if antial == False: antial = True
-                else: antial = False   # turn off antial
-            if 208 < mouse[0] < 238 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN:   # sound volume minus
-                if sound_volume > 1: sound_volume -= 1
-            if 301 < mouse[0] < 331 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN:   # sound volume plus
-                if sound_volume < 10: sound_volume += 1
-            if 208 < mouse[0] < 238 and 32 < mouse[1] < 62 and e.type == pygame.MOUSEBUTTONDOWN:   # simstep minus
-                if simstep > 1: simstep -= 1
-            if 301 < mouse[0] < 331 and 32 < mouse[1] < 62 and e.type == pygame.MOUSEBUTTONDOWN:   # simstep plus
-                if simstep < 5: simstep += 1
-        # help window
-        if whelp == True:
-            if whelp_all == False:   # if help hraph is closed:
-                if 177 < mouse[0] < 207 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN: whelp = False   # back
-                if 208 < mouse[0] < 238 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN: whelp_all = True  # help all
-            if whelp_all == True: # if help hraph is open:
-                if 177 < mouse[0] < 207 and 1 < mouse[1] < 31 and e.type == pygame.MOUSEBUTTONDOWN: whelp_all = False   # back
-        # about window
-        if wabout == True:
-            if 625 < mouse[0] < 656 and 16 < mouse[1] < 47 and e.type == pygame.MOUSEBUTTONDOWN: wabout = False   # back
-            if 680 < mouse[0] < 711 and 222 < mouse[1] < 253 and e.type == pygame.MOUSEBUTTONDOWN:   # open github link
-                webbrowser.open(r"https://github.com/mzivic7/Simulation-Chernobyl")
-            # if 680 < mouse[0] < 711 and 255 < mouse[1] < 286 and e.type == pygame.MOUSEBUTTONDOWN:   # open wiki link
-                # webbrowser.open(r"")   ####
-            if 680 < mouse[0] < 711 and 289 < mouse[1] < 320 and e.type == pygame.MOUSEBUTTONDOWN:   # open report link
-                webbrowser.open(r"https://github.com/mzivic7/Simulation-Chernobyl/issues")
+        if e.type == pygame.MOUSEBUTTONDOWN:   # if mouse clicked:
+            # main menu
+            if settings is False and whelp is False and wabout is False:
+                if 177 < mouse[0] < 207 and 1 < mouse[1] < 31:   # start /stop
+                    if pause is False: pause = True    # pause
+                    else: pause = False   # unpause
+                    if pause is True: textout, textoutcolor = "Paused", red   # just example ###
+                    if pause is False: textout, textoutcolor = "Unpaused", lime   # just example ###
+                if 208 < mouse[0] < 238 and 1 < mouse[1] < 31:   # sound
+                    if sound is False: sound = True    # unmute
+                    else: sound = False   # mute
+                if 239 < mouse[0] < 269 and 32 < mouse[1] < 62:   # simulation speed minus
+                    if simspeed >= 0.15:   # if simulation speed is over minimal:
+                        if simspeed <= 1.2: simspeed -= 0.1   # if simspeed is bellow 1.2 decrease by 0.1
+                        if simspeed > 1.2: simspeed -= 0.2   #if simspeed is above 1.2 decrease by 0.2
+                        pygame.time.set_timer(pygame.USEREVENT, int(100/simspeed))   # update simspeed
+                if 332 < mouse[0] < 362 and 32 < mouse[1] < 62:   # simulation speed plus
+                    if simspeed <= 9.9:
+                        if simspeed < 1.2: simspeed += 0.1
+                        if simspeed >= 1.2: simspeed += 0.2
+                        pygame.time.set_timer(pygame.USEREVENT, int(100/simspeed))
+                if 425 < mouse[0] < 455 and 1 < mouse[1] < 31: settings, pause = True, True   # switch to settings
+                if 425 < mouse[0] < 455 and 32 < mouse[1] < 62: whelp, pause = True, True   # switch to help
+                if 456 < mouse[0] < 486 and 32 < mouse[1] < 62: wabout, pause = True, True   # switch to about
+                if 456 < mouse[0] < 486 and 1 < mouse[1] < 31: run = False   # quit
+                    #### exit ask to save
+            # settings
+            if settings is True  and whelp is False and wabout is False:   
+                if 456 < mouse[0] < 486 and 1 < mouse[1] < 31:   # cancle settings
+                    settings = False
+                    antial, sound_volume, simstep, lang = load_settings()
+                if 456 < mouse[0] < 486 and 32 < mouse[1] < 62:   # save settings
+                    settings = False
+                    setfile = open("data/settings.txt","w+")   # open settings file
+                    setfile.write(str(antial)+' '+str(sound_volume)+' '+str(simstep)+' '+lang+' ')   # write to settings file
+                    setfile.close()   # close file
+                if 177 < mouse[0] < 207 and 1 < mouse[1] < 31:    # turn on antialias
+                    if antial is False: antial = True
+                    else: antial = False   # turn off antial
+                if 208 < mouse[0] < 238 and 1 < mouse[1] < 31 and sound_volume > 1: sound_volume -= 1  # sound volume minus
+                if 301 < mouse[0] < 331 and 1 < mouse[1] < 31 and sound_volume < 10: sound_volume += 1  # sound volume plus
+                if 208 < mouse[0] < 238 and 32 < mouse[1] < 62 and simstep > 1: simstep -= 1   # simstep minus
+                if 301 < mouse[0] < 331 and 32 < mouse[1] < 62 and simstep < 5: simstep += 1   # simstep plus
+                if 177 < mouse[0] < 207 and 32 < mouse[1] < 62:    # languages
+                    lang = languages[lang_num]
+                    lang_num +=1
+                    if lang_num >= len(languages): lang_num = 0
+                    textout = str((textsarr[5]).rstrip())
+            # help window
+            if whelp is True:
+                if whelp_all is False:   # if help all is closed:
+                    if 177 < mouse[0] < 207 and 1 < mouse[1] < 31: whelp = False   # back
+                    if 208 < mouse[0] < 238 and 1 < mouse[1] < 31: whelp_all = True  # help all
+                if whelp_all is True: # if help all is open:
+                    if 177 < mouse[0] < 207 and 1 < mouse[1] < 31: whelp_all = False   # back
+            # about window
+            if wabout is True:
+                if 625 < mouse[0] < 656 and 16 < mouse[1] < 47: wabout = False   # back
+                if 680 < mouse[0] < 711 and 222 < mouse[1] < 253:   # open github link
+                    webbrowser.open(r"https://github.com/mzivic7/Simulation-Chernobyl")
+                # if 680 < mouse[0] < 711 and 255 < mouse[1] < 286:   # open wiki link
+                    # webbrowser.open(r"")   # ###
+                if 680 < mouse[0] < 711 and 289 < mouse[1] < 320:   # open report link
+                    webbrowser.open(r"https://github.com/mzivic7/Simulation-Chernobyl/issues")
         
         # --Calculations-- #
         if e.type == pygame.USEREVENT:
-            if pause == False:   # if it is not paused:
+            if pause is False:   # if it is not paused:
                 # --Engine-- #
                 
                 # --Graphs-- #
@@ -309,7 +308,7 @@ while run:
                         val[0,0] -= (counter * 10 - ((graphxlength)/2)*2)   # make first x constant
                 counter += counter_step   # iterate counter
                 counter = round(counter, 2)   # round counter to one decimal
-            
+        
         if e.type == pygame.QUIT: run = False   # if exited, break loop
     
     # --Draw lines-- #
@@ -317,28 +316,28 @@ while run:
     val0[:,0] = val[:,0]   # add x values to seed from buffer
     val1 = val0   # set specific line matrix ### G
     val1[:,1] = val[:,1]   # ad y to that specific line matrix from buffer ### G
-    if antial == True: pygame.draw.aalines(screen, (255,0,0), False, val1, 2)   # draw graphed lines ### G
+    if antial is True: pygame.draw.aalines(screen, (255,0,0), False, val1, 2)   # draw graphed lines ### G
     else: pygame.draw.lines(screen, (255,0,0), False, val1, 2)   # draw graphed lines ### G
     val2 = val0   # ### G
     val2[:,1] = val[:,2]   # ### G
-    if antial == True: pygame.draw.aalines(screen, (0,255,0), False, val2, 2)   # ### G
+    if antial is True: pygame.draw.aalines(screen, (0,255,0), False, val2, 2)   # ### G
     else: pygame.draw.lines(screen, (0,255,0), False, val1, 2)   # ### G
     val3 = val0   # ### G
     val3[:,1] = val[:,3]   # ### G
-    if antial == True: pygame.draw.aalines(screen, (0,0,255), False, val3, 2)   # ### G
+    if antial is True: pygame.draw.aalines(screen, (0,0,255), False, val3, 2)   # ### G
     else: pygame.draw.lines(screen, (0,0,255), False, val1, 2)   # ### G
     
     # --Menu button style-- #
-    if whelp == False and wabout == False: mouseovergroup()   # draw rectangles if mouse is over button
-    if settings == False and whelp == False and wabout == False:   ## main menu ##
+    if whelp is False and wabout is False: mouseovergroup()   # draw rectangles if mouse is over button
+    if settings is False and whelp is False and wabout is False:   ## main menu ##
         mousover(2,1,grey)   # simulation speed minus
         mousover(9,1,grey)   # about
         # start/stop
-        if pause == True: pygame.draw.rect(screen, llime, (177,1,30,30)) # if simulation is paused: color it
+        if pause is True: pygame.draw.rect(screen, llime, (177,1,30,30)) # if simulation is paused: color it
         mousover(0,0,grey) # start / stop
-        if pause == True: screen.blit(runbt, (177, 1))   # if simulation is paused: show image
+        if pause is True: screen.blit(runbt, (177, 1))   # if simulation is paused: show image
         else: screen.blit(stopbt, (177, 1))
-        if sound == True: screen.blit(soundon, (208, 1))   #if sound is on
+        if sound is True: screen.blit(soundon, (208, 1))   #if sound is on
         else: screen.blit(soundoff, (208, 1))
     
     screen.blit(gui, (0, 0))   ## show gui image ##
@@ -353,17 +352,17 @@ while run:
             textout3, textout2, textout1 = textout2, textout[text_width : len(textout)], textout[0 : text_width]
             textoutcolor3, textoutcolor2, textoutcolor1 = textoutcolor2, textoutcolor, textoutcolor   # same for colors
     memtextout = textout   # update mem
-    if welcome == True:
+    if welcome is True:
         textout1, textout2, textout3 = str((textsarr[0]).rstrip()), str((textsarr[1]).rstrip()), str((textsarr[2]).rstrip())
     screen.blit(fontsm.render(str(textout1), True, textoutcolor1), (363, 669))   # text output line 1
     screen.blit(fontsm.render(str(textout2), True, textoutcolor2), (363, 684))   # text output line 2
     screen.blit(fontsm.render(str(textout3), True, textoutcolor3), (363, 699))   # text output line 3
     
     # --Settings-- #
-    if settings == True  and whelp == False and wabout == False:   ## settings ##
+    if settings is True  and whelp is False and wabout is False:   ## settings ##
         pygame.draw.rect(screen, (255,255,255), (177,1,309,61))   # settings overlay
         mouseovergroup()
-        if antial == True: pygame.draw.rect(screen, llime, (177,1,30,30))
+        if antial is True: pygame.draw.rect(screen, llime, (177,1,30,30))
         mousover(1,0,grey)   # - sound
         mousover(0,0,grey)   # anti aliasing
         mousover(4,0,grey)   # + sound
@@ -373,9 +372,10 @@ while run:
         screen.blit(setmenu, (177, 1))   # show settings
         screen.blit(fontlg.render("V:" + str(sound_volume), True, black), (248, 6))   # simulation speed text
         screen.blit(fontlg.render("S:" + str(simstep), True, black), (248, 37))   # simulation step text
+        screen.blit(fontsm.render(lang, True, black), (180, 37))   # languages
         
     # --Help-- #
-    if whelp == True:
+    if whelp is True:
         mousover(0,0,grey)   # back button
         screen.blit(back, (176, 0))   # back button
         screen.blit(help_graph_all, (208, 1))   # help diagram button
@@ -384,11 +384,12 @@ while run:
         pygame.draw.line(screen, black, (176, 271), (176, 537))   # draw border over that hidden part
         screen.blit(rods_help, (294, 549))   # rods help picture
         screen.blit(fontlg.render(str((textsarr[4]).rstrip()), True, black), (5,543))   # inside core text
-        if whelp_all == False:
+        if whelp_all is False:
             mousover(1,0,grey)   # help diagram button
             screen.blit(help_graph_all, (208, 1))   # help diagram button
             pygame.draw.rect(screen, (255,255,255), (1104,1,175,718))   # hide inputs
             screen.blit(help_gui, (1107,4))   # show gui help 
+            screen.blit(fontsm.render(lang, True, black), (1111, 599))   # add language name to gui help
             for line_num, lines in enumerate(gui_explarr):   # for each line in gui explanations:
                 # print that line in new row
                 screen.blit(fontsm.render(str((gui_explarr[line_num]).rstrip()), True, black), (1145, int(4+(line_num*15.5))))
@@ -404,7 +405,7 @@ while run:
                     pygame.draw.rect(screen, black, (lines[0],lines[1],lines[2]-lines[0]+1,lines[3]-lines[1]+1), 1)  # draw outline
                     text_wrap(screen, str((rods_explarr[line_num]).rstrip()), (5 ,565, 285, 720),fontsm, fontsb, black)  # print txt
                         
-        if whelp_all == True:   # if all help is true:
+        if whelp_all is True:   # if all help is true:
             text_lines(screen, graph_names_l[:,6], (5,5,172,520), fontsb, 6)   # left all help
             connect_lines(screen, graph_names_l, (177, 2, 22))   # draw lines connecting left text to elements
             text_lines(screen, graph_names_r[:,6], (1110,5,1280,520), fontsb, 6)   # right all help
@@ -414,7 +415,7 @@ while run:
             pygame.draw.line(screen, black, (176, 538), (176, 719))   # names border extended line
 
     # --About-- #
-    if wabout == True:
+    if wabout is True:
         pygame.draw.rect(screen, (255,255,255), (1,1,windowx-2,windowy-2))   # blank screen
         mousover_coord(625, 16, grey)
         screen.blit(back, (624, 15))   # back button

@@ -1,5 +1,6 @@
-Wlcome to chernobyl simulation! 
+Welcome to Simulation Chernobyl! 
 This is help screen. 
 Click on back button to go to main GUI.
 Mouseover on each element to show explanation for it.
 Inside Core
+For changes to take effect, simulator restart is required.

@@ -36,3 +36,5 @@ Show all elements
  names
 Open link in
  browser
+Simulation 
+ language
