@@ -1,5 +1,8 @@
 import numpy as np
 
+# Calculates center coordinates of boxes edge coordinates given in file
+# and saves them in new file with edge coordinates of box
+
 moverbox = np.loadtxt("input_coords.txt", dtype='int', delimiter=',')   # load file to main array
 centerx = ((moverbox[:,2]-moverbox[:,0])/2 + moverbox[:,0]).astype(int)   # calculate center x coords
 centery = ((moverbox[:,3]-moverbox[:,1])/2 + moverbox[:,1]).astype(int)   # calculate center y coords

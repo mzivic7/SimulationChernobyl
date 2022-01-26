@@ -1,7 +1,8 @@
 # Simulation Chernobyl
 Customatizable simulator of Chernobyl Nuclear Power Plant.
 Written in Python with PyGame.
-### This project is currently in pre-alpha state
+#### This project is currently in pre-alpha state
+
 ## Building
 ### Linux
 1. Clone this repositiry: `git clone https://github.com/mzivic7/Simulation-Chernobyl.git`
@@ -17,6 +18,8 @@ Written in Python with PyGame.
 ### Android
 Not yet supported.
 GUI may be to small on regullar phones.
+
 ## Progress
-Currently, there is only implemented main GUI with some features like help, and test graph. 
+Currently, there is only implemented main GUI with some features like help, graph, settings, value picker. 
+
 Simulation engine is under development.

@@ -8,6 +8,8 @@ Show recorded
  data
 Change sim 
  speed
+Graph value and
+ color picker
 Save current 
  state
 Load from file
@@ -18,17 +20,11 @@ Help
 
 About
 
-Quit
+Quit / False
 
-Anti aliasing
+Save / True
 
 Cancle
-
-Save settings
-
-Change volume
-
-Change sim step
 
 Back
 
@@ -36,5 +32,11 @@ Show all elements
  names
 Open link in
  browser
+Anti aliasing
+
+Change volume
+
+Change graph
+ zoom on X axis
 Simulation 
  language

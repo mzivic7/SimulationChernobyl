@@ -1,6 +1,9 @@
 import numpy as np
 
-############## sort text acording to rules
+# Creates 2 sorted arrays for left and right side for help_all screen
+# containing coordinates of center of element and its name to be displayed on screen
+# Arrays are sorted so there are no line intersections
+# Filter can be used to excluede unwanted lines in output file
 
 # inputs
 separator = 630   # border on x axis sparating graph in left and right region

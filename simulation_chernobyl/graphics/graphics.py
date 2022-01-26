@@ -1,13 +1,6 @@
 import pygame
 import numpy as np
-
-# colors
-black = (0,0,0)
-grey  = (210,210,210)
-llime = (140,255,140)
-lred  = (255,140,140)
-red   = (255,0,0)
-lime  = (0,255,0)
+from ..graphics import rgb
 
 # mouseover button effect, buttons are numerated by position
 def mouseover(surface, x, y, color, mouse):
@@ -17,22 +10,22 @@ def mouseover(surface, x, y, color, mouse):
 # mouseover button effect, buttons are defined by coordinates
 def mouseover_coord(surface, x, y, color, mouse):
     if x < mouse[0] < x + 31 and y < mouse[1] < y + 31:   # if mouse is over button:
-        pygame.draw.rect(surface, color, (x , y, 30, 30))  # color it
+        pygame.draw.rect(surface, color, (x, y, 30, 30))  # color it
 
 # group of mouseover button effects
 def mouseover_group(surface, mouse):
     # button location      main set                  settings set
-    mouseover(surface, 1, 0, grey, mouse)   # sound switch            # - sound
-    mouseover(surface, 6, 0, grey, mouse)   # X                       # languages
-    mouseover(surface, 7, 0, grey, mouse)   # save                    # recording values
-    mouseover(surface, 8, 0, grey, mouse)   # settings                # config database
-    mouseover(surface, 9, 0, lred, mouse)   # quit                    # cancle
-    mouseover(surface, 0, 1, grey, mouse)   # record                  # X
-    mouseover(surface, 1, 1, grey, mouse)   # show recorded graph     # - simstep
-    mouseover(surface, 5, 1, grey, mouse)   # simulation speed plus   # X
-    mouseover(surface, 6, 1, grey, mouse)   # X                       # X
-    mouseover(surface, 7, 1, grey, mouse)   # load                    # graph values
-    mouseover(surface, 8, 1, grey, mouse)   # help                    # config encoder
+    mouseover(surface, 1, 0, rgb.gray1, mouse)   # sound switch            # - sound
+    mouseover(surface, 6, 0, rgb.gray1, mouse)   # X                       # languages
+    mouseover(surface, 7, 0, rgb.gray1, mouse)   # save                    # recording values
+    mouseover(surface, 8, 0, rgb.gray1, mouse)   # settings                # config database
+    mouseover(surface, 9, 0, rgb.red1, mouse)   # quit                    # cancle
+    mouseover(surface, 0, 1, rgb.gray1, mouse)   # record                  # X
+    mouseover(surface, 1, 1, rgb.gray1, mouse)   # show recorded graph     # - simstep
+    mouseover(surface, 5, 1, rgb.gray1, mouse)   # simulation speed plus   # X
+    mouseover(surface, 6, 1, rgb.gray1, mouse)   # X                       # X
+    mouseover(surface, 7, 1, rgb.gray1, mouse)   # load                    # graph values
+    mouseover(surface, 8, 1, rgb.gray1, mouse)   # help                    # config encoder
 
 # prints text in box with word wrapping, with separator for bold tittle
 def text_wrap(surface, text, pos, font, tittle_font, color=(0,0,0)):
@@ -79,34 +72,6 @@ def connect_lines(surface, coords_graph, coords_text, color=(0,0,0)):
 
 
 
-class Logger():
-    def __init__(self):
-        self.mem_text = ""   # to store previous text
-        self.text1, self.text2, self.text3 = "", "", ""   # text buffer
-        self.text_color1, self.text_color2, self.text_color3 = (0,0,0), (0,0,0), (0,0,0)   # text color buffer
-        self.max_width = 100
-        
-    # log displayed on surface during simulation
-    def gui_logger(self, surface, font):
-        surface.blit(font.render(str(self.text1), True, self.text_color1), (363, 669))   # text output line 1
-        surface.blit(font.render(str(self.text2), True, self.text_color2), (363, 684))   # text output line 2
-        surface.blit(font.render(str(self.text3), True, self.text_color3), (363, 699))   # text output line 3
-        
-    # add new text to log
-    def log_add(self, text, text_color=black):
-        if text != self.mem_text:   # if new text is sent:
-            self.text3, self.text2, self.text1 = self.text2, self.text1, text   # add it to begenning, and shift others
-            self.text_color3, self.text_color2, self.text_color1 = self.text_color2, self.text_color1, text_color   # same for colors
-            if len(text) > self.max_width:   # if text is larger than window: split it and shift again
-                self.text3, self.text2, self.text1 = self.text2, text[self.max_width : len(text)], text[0 : self.max_width]
-                self.text_color3, self.text_color2, self.text_color1 = self.text_color2, text_color, text_color   # same for colors
-        self.mem_text = text   # update mem
-    
-    # load max text width
-    def gui_max_width(self, max_width):
-        self.max_width = max_width
-
-
 class Grapher():
     def __init__(self):
         self.mem = 1
@@ -123,16 +88,22 @@ class Grapher():
         self.length = x2 - x1   # graph length
         self.height = y2 - y1   # graph height
         self.counter_step = counter_step   # counter step
-        self.val = np.zeros([int(self.length/(counter_step*10)),4])   # graph buffer matrix ###
-        self.val0 = np.zeros([int(self.length/(counter_step*10)),2])   # graph empty matrix ###
+        self.vals_num = 3   # number of values to be graphed
+        vals = np.zeros(self.vals_num, dtype=object)
+        self.val0 = np.zeros([int(self.length/(self.counter_step*10)),2])   # graph empty matrix
         
+    # set line colors and number of values that will be imported
+    def set_line_color(self, vals_num, line_colors):
+        self.line_colors = line_colors   # line colors
+        self.vals_num = vals_num   # line number
+        self.val = np.zeros([int(self.length/(self.counter_step*10)),vals_num + 1])   # graph buffer matrix
+    
+    
     # add values to graph
-    def add_val(self, counter, in1, in2, in3):
+    def add_val(self, counter, in_arr):
         self.val = np.roll(self.val, 1, axis=0)   # move all values in buffer
         self.val[:1] = np.zeros((self.val[:1].shape))   # one place down
-        self.val[0,1] = in1   # add new in1 + graph y2, to buffer val1 ###
-        self.val[0,2] = in2   # add new in2 + graph y2, to buffer val2 ###
-        self.val[0,3] = in3   # add new in3 + graph y2, to buffer val3 ###
+        self.val[0,1:] = in_arr   # add new imputs
         self.val[0,0] = counter * 10   # add new x to buffer
         if counter >= ((self.length/2)/5):   # if buffer overflows:
             self.val[:,0] -= self.counter_step * 10   # substract 1 step from x coords
@@ -142,15 +113,10 @@ class Grapher():
     # draw graph
     def draw_graph(self, surface, antial=False):
         self.val0[:,0] = self.val[:,0] + self.x1   # add x values to seed from buffer
-        val1 = self.val0   # set specific line matrix ### G
-        val1[:,1] = self.height - self.val[:,1] + self.y1   # ad y to that specific line matrix from buffer ###
-        if antial is True: pygame.draw.aalines(surface, (255,0,0), False, val1, 2)   # draw graphed lines ###
-        else: pygame.draw.lines(surface, (255,0,0), False, val1, 2)   # draw graphed lines ###
-        val2 = self.val0   # ### G
-        val2[:,1] = self.height - self.val[:,2] + self.y1    # ### G
-        if antial is True: pygame.draw.aalines(surface, (0,255,0), False, val2, 2)   # ###
-        else: pygame.draw.lines(surface, (0,255,0), False, val1, 2)   # ### G
-        val3 = self.val0   # ### G
-        val3[:,1] = self.height - self.val[:,3] + self.y1    # ### G
-        if antial is True: pygame.draw.aalines(surface, (0,0,255), False, val3, 2)   # ###
-        else: pygame.draw.lines(surface, (0,0,255), False, val1, 2)   # ### G
+        for column_num, column in enumerate(self.val.T):   # for every column in val array (transpose, then read rows)
+            if column_num != 0:   # skip first column - it is x value
+                val_out = self.val0   # load x values in output line array
+                val_out[:,1] = self.height - column + self.y1   # from buffer add y, and graph y coordinates
+                color = self.line_colors[column_num - 1]   # set line color
+                if antial is True: pygame.draw.aalines(surface, color, False, val_out, 2)   # draw graphed lines
+                else: pygame.draw.lines(surface, color, False, val_out, 2)   # draw graphed lines
