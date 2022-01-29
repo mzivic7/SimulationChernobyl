@@ -39,15 +39,16 @@ class Screens():
         with open("txt/"+lang+"/expl.txt") as expl: self.explarr = expl.readlines()   # explanations
         with open("txt/"+lang+"/gui_expl.txt") as gui_expl: self.gui_explarr = gui_expl.readlines()   # gui explanations
         with open("txt/"+lang+"/rods_expl.txt") as rods_expl: self.rods_explarr = rods_expl.readlines()   # rods explanations
+        with open("txt/"+lang+"/texts.txt") as texts: self.texts_arr = texts.readlines()   # texts
+        self.graph_index = 0
         
     # main menu, without main screen
-    def main(self, mouse, pause, sound):
+    def main(self, mouse, pause, sound, record):
+        if pause is True: pygame.draw.rect(self.surface, rgb.green1, (177,1,30,30)) # if simulation is paused: color it
+        if record is True: pygame.draw.rect(self.surface, rgb.red1, (177,32,30,30)) # if recording: color it
         gr.mouseover_group(self.surface, mouse)   # draw rectangles if mouse is over button
         gr.mouseover(self.surface, 2, 1, rgb.gray1, mouse)   # simulation speed minus
         gr.mouseover(self.surface, 9, 1, rgb.gray1, mouse)   # about
-        # start/stop
-        if pause is True: pygame.draw.rect(self.surface, rgb.green1, (177,1,30,30)) # if simulation is paused: color it
-        gr.mouseover(self.surface, 0, 0, rgb.gray1, mouse) # start / stop
         if pause is True: self.surface.blit(self.runbt, (177, 1))   # if simulation is paused: show image
         else: self.surface.blit(self.stopbt, (177, 1))
         if sound is True: self.surface.blit(self.soundon, (208, 1))   # if sound is on
@@ -56,22 +57,21 @@ class Screens():
     
     # settings menu
     def settings(self, mouse, antial, sound_volume, zoom, lang):
-        pygame.draw.rect(self.surface, (255,255,255), (177,1,309,61))   # settings overlay
-        gr.mouseover_group(self.surface, mouse)   # mouseover effects for main menu
+        pygame.draw.rect(self.surface, (255,255,255), (177,1,309,61))   # hide main menu
         if antial is True: pygame.draw.rect(self.surface, rgb.green1, (177,1,30,30))
+        gr.mouseover_group(self.surface, mouse)   # mouseover effects for main menu
         gr.mouseover(self.surface, 1, 0, rgb.gray1, mouse)   # - sound
-        gr.mouseover(self.surface, 0, 0, rgb.gray1, mouse)   # anti aliasing
         gr.mouseover(self.surface, 4, 0, rgb.gray1, mouse)   # + sound
         gr.mouseover(self.surface, 5, 0, rgb.gray1, mouse)   # X
         gr.mouseover(self.surface, 4, 1, rgb.gray1, mouse)   # + zoom
-        gr.mouseover(self.surface, 9, 1, rgb.green1, mouse)   # save
-        self.surface.blit(self.setmenu, (177, 1))   # show settings
+        gr.mouseover(self.surface, 9, 1, rgb.green1, mouse)  # save
+        self.surface.blit(self.setmenu, (177, 1))   # show settings menu img
         self.surface.blit(self.fontlg.render("V:" + str(sound_volume), True, rgb.black), (248, 6))   # sound volume text
         self.surface.blit(self.fontlg.render("Z:" + str(zoom), True, rgb.black), (248, 37))   # graph zoom text
         self.surface.blit(self.fontsm.render(lang, True, rgb.black), (180, 37))   # languages
     
     # graph values picker
-    def picker(self, mouse, texts_arr, vals, val_names, val_colors, will_rec, will_graph):
+    def picker(self, mouse, vals, val_names, val_colors, will_rec, will_graph):
         pygame.draw.rect(self.surface, (255,255,255), (1,1,self.windowx-2,self.windowy-2))   # blank screen
         gr.mouseover_coord(self.surface, 1, 1, rgb.gray1, mouse)   # back button mouseover effect
         self.surface.blit(self.back, (0, 0))   # back button
@@ -86,15 +86,17 @@ class Screens():
             if vline == vertical_lines[5]:   # if it is middle line: draw more one line next to it
                 pygame.draw.line(self.surface, rgb.black, (vline + 2, 31), (vline + 2, self.windowy))
         # texts
-        self.surface.blit(self.fontmd.render(str((texts_arr[6]).rstrip()), True, rgb.black), (40, 7))   # explanation text
+        self.surface.blit(self.fontmd.render(str((self.texts_arr[6]).rstrip()), True, rgb.black), (40, 7))   # explanation text
         for word_repeat in range(2):   # repeat it twice:
             if word_repeat == 1: vertical_lines = vertical_lines[5:]   # in second iterration move to right side
-            for word_num, word in enumerate(texts_arr[7].replace("\n", "").split(" ")):   # for every word
+            for word_num, word in enumerate(self.texts_arr[7].replace("\n", "").split(" ")):   # for every word
                 word_pos = vertical_lines[word_num] + 6   # increase word position by line position
                 self.surface.blit(self.fontmd.render(word, True, rgb.black), (word_pos, 38))   # print column names
         for num, val_name in enumerate(val_names):   # for every value:
             column = 0   # on what side should be written, default = left
-            if 62 + num * 30 > self.windowy: column = 640   # if ther eis no more space on left: write on right side
+            if 62 + num * 30 > self.windowy: # if there is no more space on left:
+                column = 640   # write on right side
+                # num -=   ### ### ###
             pygame.draw.rect(self.surface, val_colors[num], (81 + column, 62 + num * 30, 49, 29))   # value color
             self.surface.blit(self.fontmd.render(val_name, True, rgb.black), (136 + column, 68 + num * 30))   # value name
             self.surface.blit(self.fontmd.render(str(round(vals[num], 2)), True, rgb.black), (496 + column, 68 + num * 30))   # value
@@ -177,3 +179,51 @@ class Screens():
         self.surface.blit(self.link, (679, 221))   # github button
         self.surface.blit(self.link, (679, 255))   # wiki button
         self.surface.blit(self.link, (679, 289))   # report bug button
+
+    # show recorded
+    def rec_show(self, mouse, mouse_wheel, records, sel_record, read_record, header_record, color_record, antial):
+        pygame.draw.rect(self.surface, (255,255,255), (1,1,self.windowx-2,self.windowy-2))   # blank screen
+        gr.mouseover_coord(self.surface, 1, 1, rgb.gray1, mouse)   # back button mouseover effect
+        self.surface.blit(self.back, (0, 0))   # back button
+        # lines
+        pygame.draw.line(self.surface, rgb.black, (200, 0), (200, self.windowy))   # vertical line
+        pygame.draw.line(self.surface, rgb.black, (200, 620), (self.windowx, 620))   # horizontal line
+        pygame.draw.line(self.surface, rgb.black, (0, 31), (200, 31))   # horizontal explanation line
+        gr.mouseover_coord(self.surface, 1, 32 + sel_record * 31, rgb.gray1, (5, 35 + sel_record * 31), 200, 31)   # selected record
+        # record picker
+        self.surface.blit(self.fontmd.render(str((self.texts_arr[8]).rstrip()), True, rgb.black), (40, 7))   # explanation text
+        for num, recording in enumerate(records):   # for every file:
+            gr.mouseover_coord(self.surface, 1, 32 + num * 31, rgb.gray1, mouse, 200, 31)   # mouseover effect
+            # print its name
+            self.surface.blit(self.fontmd.render(recording.replace("Recording from ", ""), True, rgb.black), (5, 38 + num * 31))
+            pygame.draw.line(self.surface, rgb.black, (0, 31 + num * 31), (200, 31 + num * 31))   # separator line
+        pygame.draw.line(self.surface, rgb.black, (0, 62 + num * 31), (200, 62 + num * 31))   # end line
+        # graph legend
+        row = 0   # in which row is writting
+        dif = 0   # difference for nex row
+        column = 0   # in which column is writting
+        color_record = color_record.replace("\n", "").replace('"', '').replace('(', '').split("),")   # colors string to list
+        for num, val_name in enumerate(header_record):   # for every value:
+            if 626 + 44 + row * 22 > self.windowy:   # if there are no more rows:
+                column += 200   # write in new column
+                dif = num   # update difference
+            row = num - dif   # return to 0 row
+            # color_record is read as list, not list of tuples
+            color = tuple(list(map(int, color_record[num].replace(")", "").split(", "))))   # get tuple from list of strings
+            self.surface.blit(self.fontsm.render(val_name, True, color), (206 + column, 626 + row * 22))   # value name
+        # graph
+        if mouse_wheel != 0:   # if mouse wheel has moved
+            self.graph_index += mouse_wheel * 4   # add it to graph index
+            mouse_wheel = 0   # reset it
+        if self.graph_index < 0: self.graph_index = 0   # prevent index from going negative
+        if self.graph_index > len(read_record) - 1078: self.graph_index = len(read_record) - 1078   # prevent index from going over max
+        display_vals = read_record[self.graph_index : self.graph_index + 1078, :]   # get slice of vals from graph index
+        val_out = np.zeros([1078,2])   # array to separately store vals to be graphed
+        val_out[:,0] = range(201, 1279)   # add x values to it
+        for num, column in enumerate(display_vals.T):   # for every column in val array, (transpose to read rows)
+            if num != 0:   # skip first column - it is x value
+                val_out[0:len(column),1] = 619 - column   # from buffer add y, and graph y coordinates
+                color = tuple(list(map(int, color_record[num - 1].replace(")", "").split(", "))))   # get tuple from list of strings
+                if antial is True: pygame.draw.aalines(self.surface, color, False, val_out, 2)   # draw graphed lines
+                else: pygame.draw.lines(self.surface, color, False, val_out, 2)   # draw graphed lines
+

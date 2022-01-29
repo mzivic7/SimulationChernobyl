@@ -4,33 +4,36 @@ import math
 import time
 import datetime
 import webbrowser
+import os
+import csv
 
 from simulation_chernobyl.util import fileops
 from simulation_chernobyl.graphics import graphics
+from simulation_chernobyl.graphics import grapher
 from simulation_chernobyl.graphics import logger
 from simulation_chernobyl.graphics import screens
 from simulation_chernobyl.graphics import rgb
 
 logger = logger.Logger()
-grapher = graphics.Grapher()
+grapher = grapher.Grapher()
 screens = screens.Screens()
 
 
 
 # --Todo-- #
-###### recorder, show
-##### zoom graph
-### auto scale graph
+###### record time scale, zoom y, focus
+##### zoom graph and record x
+##### graph line height multiplyer in picker
+### auto scale graph 
 
 ######### engine
 ######## main interface
 ##### save, load, save on quit
 ### logging
-## second graph ???
 ## icon
 
-version = "Pre-alpha 0.2.0"
-date = "(26.1.2022)" 
+version = "Pre-alpha 0.2.1"
+date = "(29.1.2022)" 
 
 
 
@@ -47,12 +50,16 @@ counter = 0   # simulation time
 antial = False   # anti aliasing
 sound = True   # sound on/off
 pause = True   # program paused
+record = False   # recording values
+rec_show = False   # show recorded values
 settings = False   # settings open
 graph_picker = False   # graph picker open
 whelp = False   # help window open
 whelp_all = False   # full diagram show
 wabout = False   # about window open
 welcome = False   # print welcome text
+sel_record = 0   # selected recort to show
+mouse_wheel = 0   # mouse wheel rotation state
 
 lang = "eng"   # simulation language
 lang_num = 1   # index of language in use
@@ -69,14 +76,20 @@ grapher.graph_dim(1, 538, 361, 718, counter_step)   # grapher dimensions
 ###### --Initial values for grapher-- ######
 vals = np.zeros(6)   # empty array to store all values
 val_names = ["val1", "val2", "val3", "val4", "val5", "val6"]   # names of these values
-val_colors = np.array([rgb.red, rgb.lime, rgb.blue, rgb.black, rgb.purple, rgb.cyan])   # initial line colors
 will_rec = np.array([False, True, False, True, False, False])   # will these values be recorded?
 will_graph = np.array([True, True, True, False, False, False])   # will these values be graphed?
+val_colors = np.array([rgb.red, rgb.lime, rgb.blue, rgb.black, rgb.purple, rgb.cyan])   # colors for these values
 
-graph_line_num = 4   # initial number of lines on graph
-grapher.set_line_color(graph_line_num, val_colors)   # set initial line colors
+graph_line_num = 3   # initial number of lines on graph
 vals_graph = np.zeros(graph_line_num)   # empty array to store values that are graphed
-colors_graph = np.zeros(graph_line_num, dtype=object)   # empty array to store value colors that are graphed
+colors_graph = np.array([rgb.red, rgb.lime, rgb.blue], dtype=object)   # initial colors for graphed values
+
+rec_num = 2   # initial number of values to be recorded
+names_rec = np.array(["val2", "val4"])   # initial values names to be recorded
+colors_rec = np.array(["(0, 128, 0)", "(0, 0, 0)"], dtype=object)   # initial colors for recorded values
+vals_rec = np.zeros(rec_num)   # empty list of vals to be recorded
+
+grapher.set_line_color(graph_line_num, colors_graph)   # update line colors
 
 
 
@@ -142,13 +155,27 @@ while run:
         if e.type == pygame.MOUSEBUTTONDOWN:   # if mouse clicked:
             
             # main menu
-            if settings is False and whelp is False and wabout is False and graph_picker is False:
-                if 177 < mouse[0] < 207 and 1 < mouse[1] < 31:   # start /stop
-                    if pause is False: pause = True    # pause
-                    else: pause = False   # unpause
+            if settings is False and whelp is False and wabout is False and graph_picker is False and rec_show is False:
+                if 177 < mouse[0] < 207 and 1 < mouse[1] < 31:   # start / stop
+                    if pause is False: 
+                        pause = True    # pause
+                        logger.log_add("Paused", rgb.red)   # GUI logger example
+                    else: 
+                        pause = False   # unpause
+                        logger.log_add("Unpaused", rgb.lime)   # GUI logger example
+                if 177 < mouse[0] < 207 and 32 < mouse[1] < 62:   # record
+                    if record is False: 
+                        record = True    # start
+                        grapher.record_start(names_rec, colors_rec)   # start recording
+                        logger.log_add("Recording started") 
+                    else: 
+                        record = False   # stop
+                        grapher.record_stop()   # stop recording
+                        logger.log_add("Recording stopped. Saved in records directory.")
                 if 208 < mouse[0] < 238 and 1 < mouse[1] < 31:   # sound
                     if sound is False: sound = True    # unmute
                     else: sound = False   # mute
+                if 208 < mouse[0] < 238 and 32 < mouse[1] < 62: rec_show = pause = True   # show recorded
                 if 239 < mouse[0] < 269 and 32 < mouse[1] < 62:   # simulation speed minus
                     if simspeed >= 0.15:   # if simulation speed is over minimal:
                         if simspeed <= 1.2: simspeed -= 0.1   # if simspeed is bellow 1.2 decrease by 0.1
@@ -159,10 +186,10 @@ while run:
                         if simspeed < 1.2: simspeed += 0.1
                         if simspeed >= 1.2: simspeed += 0.2
                         pygame.time.set_timer(pygame.USEREVENT, int(100/simspeed))
-                if 425 < mouse[0] < 455 and 1 < mouse[1] < 31: settings, pause = True, True   # switch to settings
-                if 363 < mouse[0] < 393 and 1 < mouse[1] < 31: graph_picker, pause = True, True   # switch to graph picker
-                if 425 < mouse[0] < 455 and 32 < mouse[1] < 62: whelp, pause = True, True   # switch to help
-                if 456 < mouse[0] < 486 and 32 < mouse[1] < 62: wabout, pause = True, True   # switch to about
+                if 425 < mouse[0] < 455 and 1 < mouse[1] < 31: settings = pause = True  # switch to settings
+                if 363 < mouse[0] < 393 and 1 < mouse[1] < 31: graph_picker = pause = True   # switch to graph picker
+                if 425 < mouse[0] < 455 and 32 < mouse[1] < 62: whelp = pause = True   # switch to help
+                if 456 < mouse[0] < 486 and 32 < mouse[1] < 62: wabout = pause = True   # switch to about
                 if 456 < mouse[0] < 486 and 1 < mouse[1] < 31: run = False   # quit
             
             # graph picker
@@ -182,16 +209,30 @@ while run:
                             cur_color = -1   # rotate to start (-1 becouse later it will be returned to 0)
                         val_colors[num] = rgb.all_main[cur_color + 1]   # move to next color in array
                 graph_line_num = len(np.delete(will_graph, np.where(will_graph == False)))   # new number of graph lines
-                vals_graph = np.zeros(graph_line_num)   # list of vals to be on graph
-                colors_graph = np.zeros(graph_line_num, dtype=object)   # output color list
+                vals_graph = np.zeros(graph_line_num)   # empty list of vals to be on graph
+                colors_graph = np.zeros(graph_line_num, dtype=object)   # resize output color list
+                rec_num = len(np.delete(will_rec, np.where(will_rec == False)))   # new number of vals to be recorded
+                vals_rec = np.zeros(rec_num)   # empty list of vals to be recorded
+                names_rec = np.zeros(rec_num, dtype=object)   # empty list of val names to be recorded
+                colors_rec = np.zeros(rec_num, dtype=object)   # resize record color list
                 if 0 < mouse[0] < 31 and 1 < mouse[1] < 31:   # back
-                    graph_picker = False
+                    graph_picker = False   # back
+                    num_out = 0   # iterable value for output list
+                    for num, check in enumerate(will_rec):   # iterate over all variables
+                        if check == True:   # if this value is marked to be recorded:
+                            colors_rec[num_out] = tuple(val_colors[num])   # add its color to output list
+                            names_rec[num_out] = val_names[num]   # add its name to output list
+                            num_out += 1   # iterate output list
                     num_out = 0   # iterable value for output list
                     for num, check in enumerate(will_graph):   # iterate over all variables
                         if check == True:   # if this value is marked to be plotted:
                             colors_graph[num_out] = val_colors[num]   # add its color to output list
                             num_out += 1   # iterate output list
                     grapher.set_line_color(graph_line_num, colors_graph)   # update grapher colors
+                if record is True:   # if recording is active:
+                        record = False   # stop recording
+                        grapher.record_stop()   # stop recording
+                        logger.log_add("Recording stopped. Saved in records directory.")
                     
             # settings
             if settings is True:
@@ -233,8 +274,32 @@ while run:
                     # webbrowser.open(r"")   # ###
                 if 680 < mouse[0] < 711 and 289 < mouse[1] < 320:   # open report bug link
                     webbrowser.open(r"https://github.com/mzivic7/Simulation-Chernobyl/issues")
-        
-        
+            
+            # show records
+            if rec_show is True:
+                if 0 < mouse[0] < 31 and 1 < mouse[1] < 31: rec_show = False   # back
+                records = os.listdir("records")   # get list of all records
+                if not records:   # if there are no files
+                    rec_show = False   # dont show records menu
+                    logger.log_add("There are no saved records.")
+                else:
+                    for num in range(len(records)):   # for every file position:
+                        if 0 < mouse[0] < 200 and 31 + num * 31 < mouse[1] < 62 + num * 31: 
+                            sel_record = num   # select record
+                    with open("records/" + records[sel_record]) as file: 
+                        file_lines = file.readlines()   # read all lines in array
+                        header_record = file_lines[0].replace("\n", "").replace("time,", "").split(",")   # read csv val names
+                        color_record = file_lines[1]   # read csv val colors
+                    read_record = np.genfromtxt("records/" + records[sel_record], delimiter=',', skip_header = 2)   # read csv vals
+                    if len(read_record) == 0:   # if there are no data
+                        read_record = np.zeros([2,len(header_record) + 1])   # add zeros to prevent graph errors
+                        color_record = '"(255, 255, 255),"' * len(header_record)   # color all lines white to hide them
+                        
+        # mouse wheel
+        if e.type == pygame.MOUSEWHEEL:   # if event is mouse whell
+            mouse_wheel = e.y   # store its movement in variable as -1 and 1
+                
+                
         
         ###### --Calculations-- ######
         if e.type == pygame.USEREVENT:   # event for calculations
@@ -255,13 +320,20 @@ while run:
                         vals_graph[num_out] = vals[num]   # add it to output list
                         num_out += 1   # iterate output list
                 grapher.add_val(counter, vals_graph)   # add values to graph
+                
+                num_out = 0   # iterable value for output list
+                if record is True:
+                    for num, check in enumerate(will_rec):
+                        if check == True:   # if this value is marked to be plotted:
+                            vals_rec[num_out] = vals[num]   # add it to output list
+                            num_out += 1   # iterate output list
+                    grapher.rec_val(counter, vals_rec)   # record values to file
+                    
                 counter += counter_step   # iterate counter
                 counter = round(counter, 2)   # round counter to one decimal
         
         if e.type == pygame.QUIT: run = False   # if exited, break loop
     
-    if pause is True: logger.log_add("Paused", rgb.red)   # GUI logger example
-    if pause is False: logger.log_add("Unpaused", rgb.lime)   # GUI logger example
     
     
     ###### --Graphics-- ######
@@ -281,15 +353,18 @@ while run:
         welcome = False
 
     if settings is False and whelp is False and wabout is False and graph_picker is False:
-        screens.main(mouse, pause, sound)   # main menu
+        screens.main(mouse, pause, sound, record)   # main menu
     if settings is True:
         screens.settings(mouse, antial, sound_volume, zoom, lang)   # settings
     if graph_picker is True:
-        screens.picker(mouse, texts_arr, vals, val_names, val_colors, will_rec, will_graph)   # graph value picker
+        screens.picker(mouse, vals, val_names, val_colors, will_rec, will_graph)   # graph value picker
     if whelp is True:
         screens.help(mouse, whelp_all, lang, texts_arr)   # help
     if wabout is True:
         screens.about(mouse, about_txt)   # about
+    if rec_show is True:   # show recorded values
+        screens.rec_show(mouse, mouse_wheel, records, sel_record, read_record, header_record, color_record, antial)   # show records
+        mouse_wheel = 0   # reset mouse whell state
     
     screen.blit(fontlg.render(str(mouse), True, rgb.black), (5, 695))   # show mouse coordinates
     
