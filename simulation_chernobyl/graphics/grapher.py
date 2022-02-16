@@ -57,8 +57,8 @@ class Grapher():
     def record_start(self, names_rec, colors_rec):
         now_time = datetime.datetime.now()   # get current date and time
         now_time_short = (now_time.strftime("%Y-%m-%d %H-%M-%S"))   # remove milliseconds
-        if os.path.isdir("records") is False: os.mkdir("records")
-        self.csv_file = open("records/Recording from " + now_time_short + ".csv", mode='w')   # create new file
+        if os.path.isdir("records") is False: os.mkdir("records")   # if there is no records dir: create it
+        self.csv_file = open("records/Recording from " + now_time_short + ".csv", mode='w', newline="")   # create new file
         self.writer = csv.writer(self.csv_file, delimiter=',')   # prepare writer
         self.writer.writerow(np.insert(names_rec, 0, "time"))   # add value names to csv header
         self.writer.writerow(colors_rec)   # add value colors to csv header

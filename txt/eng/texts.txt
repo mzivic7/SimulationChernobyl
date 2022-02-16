@@ -6,5 +6,7 @@ Inside Core
 For changes to take effect, save changes and restart simulation.
 Select which values will be recorded, which will be shown on graph and which color will be line.
 Rec Plot Color Name Value
-Pick a record
+Pick a record:
 Scroll with mouse to move graph
+Click on value name to focus it
+Record is empty!

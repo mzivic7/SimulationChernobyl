@@ -25,6 +25,7 @@ class Screens():
         self.link = pygame.image.load("img/link.png")
         self.accept = pygame.image.load("img/accept.png")
         self.cancle = pygame.image.load("img/cancle.png")
+        self.camera = pygame.image.load("img/camera.png")
         self.fontlg = pygame.font.Font("txt/fonts/LiberationSans-Regular.ttf", 18)   # large text font
         self.fontmd = pygame.font.Font("txt/fonts/LiberationSans-Regular.ttf", 16)   # medium text font
         self.fontsm = pygame.font.Font("txt/fonts/LiberationSans-Regular.ttf", 15)   # small text font
@@ -184,14 +185,19 @@ class Screens():
     def rec_show(self, mouse, mouse_wheel, records, sel_record, read_record, header_record, color_record, antial):
         pygame.draw.rect(self.surface, (255,255,255), (1,1,self.windowx-2,self.windowy-2))   # blank screen
         gr.mouseover_coord(self.surface, 1, 1, rgb.gray1, mouse)   # back button mouseover effect
+        gr.mouseover_coord(self.surface, 32, 1, rgb.gray1, mouse)   # save image button mouseover effect
         self.surface.blit(self.back, (0, 0))   # back button
+        self.surface.blit(self.camera, (32, 1))   # save image button
         # lines
         pygame.draw.line(self.surface, rgb.black, (200, 0), (200, self.windowy))   # vertical line
-        pygame.draw.line(self.surface, rgb.black, (200, 620), (self.windowx, 620))   # horizontal line
+        pygame.draw.line(self.surface, rgb.black, (62, 1), (62, 31))   # vertical line button 2
+        pygame.draw.line(self.surface, rgb.black, (93, 1), (93, 31))   # vertical line button 3
+        pygame.draw.line(self.surface, rgb.black, (200, 620), (self.windowx, 620))   # horizontal line legend
+        pygame.draw.line(self.surface, rgb.black, (200, 602), (self.windowx, 602))   # horizontal time scale line
         pygame.draw.line(self.surface, rgb.black, (0, 31), (200, 31))   # horizontal explanation line
         gr.mouseover_coord(self.surface, 1, 32 + sel_record * 31, rgb.gray1, (5, 35 + sel_record * 31), 200, 31)   # selected record
         # record picker
-        self.surface.blit(self.fontmd.render(str((self.texts_arr[8]).rstrip()), True, rgb.black), (40, 7))   # explanation text
+        self.surface.blit(self.fontmd.render(str((self.texts_arr[8]).rstrip()), True, rgb.black), (99, 7))   # explanation text
         for num, recording in enumerate(records):   # for every file:
             gr.mouseover_coord(self.surface, 1, 32 + num * 31, rgb.gray1, mouse, 200, 31)   # mouseover effect
             # print its name
@@ -199,6 +205,8 @@ class Screens():
             pygame.draw.line(self.surface, rgb.black, (0, 31 + num * 31), (200, 31 + num * 31))   # separator line
         pygame.draw.line(self.surface, rgb.black, (0, 62 + num * 31), (200, 62 + num * 31))   # end line
         # graph legend
+        self.surface.blit(self.fontmd.render(str((self.texts_arr[9]).rstrip()), True, rgb.black), (1036, 626))   # explanation text
+        self.surface.blit(self.fontmd.render(str((self.texts_arr[10]).rstrip()), True, rgb.black), (1036, 648))   # explanation text
         row = 0   # in which row is writting
         dif = 0   # difference for nex row
         column = 0   # in which column is writting
@@ -213,17 +221,35 @@ class Screens():
             self.surface.blit(self.fontsm.render(val_name, True, color), (206 + column, 626 + row * 22))   # value name
         # graph
         if mouse_wheel != 0:   # if mouse wheel has moved
-            self.graph_index += mouse_wheel * 4   # add it to graph index
+            self.graph_index += mouse_wheel * 15   # add it to graph index
             mouse_wheel = 0   # reset it
         if self.graph_index < 0: self.graph_index = 0   # prevent index from going negative
-        if self.graph_index > len(read_record) - 1078: self.graph_index = len(read_record) - 1078   # prevent index from going over max
+        if self.graph_index > len(read_record) - 1078: self.graph_index = len(read_record) - 1078   # stop index from going over max
         display_vals = read_record[self.graph_index : self.graph_index + 1078, :]   # get slice of vals from graph index
         val_out = np.zeros([1078,2])   # array to separately store vals to be graphed
         val_out[:,0] = range(201, 1279)   # add x values to it
         for num, column in enumerate(display_vals.T):   # for every column in val array, (transpose to read rows)
             if num != 0:   # skip first column - it is x value
-                val_out[0:len(column),1] = 619 - column   # from buffer add y, and graph y coordinates
+                val_out[0:len(column),1] = 601 - column   # add y and graph position
                 color = tuple(list(map(int, color_record[num - 1].replace(")", "").split(", "))))   # get tuple from list of strings
                 if antial is True: pygame.draw.aalines(self.surface, color, False, val_out, 2)   # draw graphed lines
                 else: pygame.draw.lines(self.surface, color, False, val_out, 2)   # draw graphed lines
-
+        # time scale
+        if display_vals[1, 0] != 0:   # if there is existing data (second time value is not 0)
+            for num, time in enumerate(display_vals[:, 0]):   # for every time value in time column 
+                if time % 1 == 0:   # if divisable with 1
+                    pygame.draw.line(self.surface, rgb.black, (200 + num, 602), (200 + num, 605))   # ones line
+                    if time % 5 == 0:   # if divisable with 5
+                        if time % 10 == 0:   # if divisable with 10
+                            self.surface.blit(self.fontsm.render(str(round(time)), True, rgb.black), (202 + num, 603))   # number
+                            pygame.draw.line(self.surface, rgb.black, (200 + num, 602), (200 + num, 615))   # tens line
+                        else:   # if not divisable with 10 but with 5
+                            self.surface.blit(self.fontsm.render(str(round(time)), True, rgb.gray), (202 + num, 603))  # number
+                            pygame.draw.line(self.surface, rgb.black, (200 + num, 602), (200 + num, 610))   # fives line
+        else: # if there is no data: print explanation
+            self.surface.blit(self.fontmd.render(str((self.texts_arr[11]).rstrip()), True, rgb.black), (206, 626))
+                
+        
+        
+        
+        

@@ -21,7 +21,7 @@ screens = screens.Screens()
 
 
 # --Todo-- #
-###### record time scale, zoom y, focus
+###### record select zoom, focus, help
 ##### zoom graph and record x
 ##### graph line height multiplyer in picker
 ### auto scale graph 
@@ -32,8 +32,8 @@ screens = screens.Screens()
 ### logging
 ## icon
 
-version = "Pre-alpha 0.2.1"
-date = "(29.1.2022)" 
+version = "Pre-alpha 0.2.2"
+date = "(30.1.2022)" 
 
 
 
@@ -52,6 +52,7 @@ sound = True   # sound on/off
 pause = True   # program paused
 record = False   # recording values
 rec_show = False   # show recorded values
+rec_img = False   # save image of record graph
 settings = False   # settings open
 graph_picker = False   # graph picker open
 whelp = False   # help window open
@@ -76,7 +77,7 @@ grapher.graph_dim(1, 538, 361, 718, counter_step)   # grapher dimensions
 ###### --Initial values for grapher-- ######
 vals = np.zeros(6)   # empty array to store all values
 val_names = ["val1", "val2", "val3", "val4", "val5", "val6"]   # names of these values
-will_rec = np.array([False, True, False, True, False, False])   # will these values be recorded?
+will_rec = np.array([True, False, True, True, False, False])   # will these values be recorded?
 will_graph = np.array([True, True, True, False, False, False])   # will these values be graphed?
 val_colors = np.array([rgb.red, rgb.lime, rgb.blue, rgb.black, rgb.purple, rgb.cyan])   # colors for these values
 
@@ -84,9 +85,9 @@ graph_line_num = 3   # initial number of lines on graph
 vals_graph = np.zeros(graph_line_num)   # empty array to store values that are graphed
 colors_graph = np.array([rgb.red, rgb.lime, rgb.blue], dtype=object)   # initial colors for graphed values
 
-rec_num = 2   # initial number of values to be recorded
-names_rec = np.array(["val2", "val4"])   # initial values names to be recorded
-colors_rec = np.array(["(0, 128, 0)", "(0, 0, 0)"], dtype=object)   # initial colors for recorded values
+rec_num = 3   # initial number of values to be recorded
+names_rec = np.array(["val1", "val3", "val4"])   # initial values names to be recorded
+colors_rec = np.array(["(255, 0, 0)", "(0, 0, 255)", "(0, 0, 0)"], dtype=object)   # initial colors for recorded values
 vals_rec = np.zeros(rec_num)   # empty list of vals to be recorded
 
 grapher.set_line_color(graph_line_num, colors_graph)   # update line colors
@@ -230,9 +231,9 @@ while run:
                             num_out += 1   # iterate output list
                     grapher.set_line_color(graph_line_num, colors_graph)   # update grapher colors
                 if record is True:   # if recording is active:
-                        record = False   # stop recording
-                        grapher.record_stop()   # stop recording
-                        logger.log_add("Recording stopped. Saved in records directory.")
+                    record = False   # stop recording
+                    grapher.record_stop()   # stop recording
+                    logger.log_add("Recording stopped. Saved in records directory.")
                     
             # settings
             if settings is True:
@@ -278,6 +279,7 @@ while run:
             # show records
             if rec_show is True:
                 if 0 < mouse[0] < 31 and 1 < mouse[1] < 31: rec_show = False   # back
+                if os.path.isdir("records") is False: os.mkdir("records")   # if there is no records dir: create it
                 records = os.listdir("records")   # get list of all records
                 if not records:   # if there are no files
                     rec_show = False   # dont show records menu
@@ -294,6 +296,17 @@ while run:
                     if len(read_record) == 0:   # if there are no data
                         read_record = np.zeros([2,len(header_record) + 1])   # add zeros to prevent graph errors
                         color_record = '"(255, 255, 255),"' * len(header_record)   # color all lines white to hide them
+                if 31 < mouse[0] < 62 and 0 < mouse[1] < 31:   # save graph image
+                    sub = screen.subsurface(pygame.Rect(201, 1, 1079, 719))
+                    now_time = datetime.datetime.now()   # get current date and time
+                    now_time_short = (now_time.strftime("%Y-%m-%d %H-%M-%S"))   # remove milliseconds
+                    if os.path.isdir("screenshots") is False: os.mkdir("screenshots")   # if there is no screenshots dir, create it
+                    pygame.image.save(sub, "screenshots/Screenshot from " + now_time_short + ".png")   # save screenshot
+                if record is True:   # if recording is active:
+                    record = False   # stop recording
+                    grapher.record_stop()   # stop recording
+                    logger.log_add("Recording stopped. Saved in records directory.")
+                
                         
         # mouse wheel
         if e.type == pygame.MOUSEWHEEL:   # if event is mouse whell
@@ -370,3 +383,5 @@ while run:
     
     pygame.display.flip()   # update screen
     clock.tick(update)   # screen update frequency
+
+pygame.quit()
