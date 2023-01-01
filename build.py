@@ -1,7 +1,11 @@
 import os
 import shutil
+from sys import platform
 
-os.system('pyinstaller --noconfirm --onedir --windowed --clean --name "Simulation Chernobyl" --add-data "data:data/" --add-data "img:img/" --add-data "txt:txt/"  "main.py"')
+if platform == "win32":
+    os.system('pyinstaller --noconfirm --onedir --windowed --clean --add-data "data;data/" --add-data "img;img/" --add-data "txt;txt/" --name "Simulation Chernobyl" "main.py"')
+else:
+    os.system('python -m PyInstaller --noconfirm --onedir --windowed --clean --add-data "data;data/" --add-data "img;img/" --add-data "txt;txt/" --name "Simulation Chernobyl" "main.py"')
 
 os.remove('Simulation Chernobyl.spec')
 shutil.rmtree('build')
