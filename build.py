@@ -3,11 +3,11 @@ import shutil
 from sys import platform
 
 if platform == "win32":
-    os.system('pyinstaller --noconfirm --onedir --windowed --clean --add-data "data;data/" --add-data "img;img/" --add-data "txt;txt/" --name "Simulation Chernobyl" "main.py"')
+    os.system('pyinstaller --noconfirm --onedir --windowed --clean --add-data "data;data/" --add-data "img;img/" --add-data "txt;txt/" --name "SimulationChernobyl" "main.py"')
 else:
-    os.system('python -m PyInstaller --noconfirm --onedir --windowed --clean --add-data "data;data/" --add-data "img;img/" --add-data "txt;txt/" --name "Simulation Chernobyl" "main.py"')
+    os.system('python -m PyInstaller --noconfirm --onedir --windowed --clean --add-data "data;data/" --add-data "img;img/" --add-data "txt;txt/" --name "SimulationChernobyl" "main.py"')
 
-os.remove('Simulation Chernobyl.spec')
+os.remove('SimulationChernobyl.spec')
 shutil.rmtree('build')
 shutil.rmtree('__pycache__')
 shutil.copytree('dist/', './', dirs_exist_ok=True)

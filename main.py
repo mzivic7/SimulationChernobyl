@@ -270,11 +270,11 @@ while run:
             if wabout is True:
                 if 625 < mouse[0] < 656 and 16 < mouse[1] < 47: wabout = False   # back
                 if 680 < mouse[0] < 711 and 222 < mouse[1] < 253:   # open github link
-                    webbrowser.open(r"https://github.com/mzivic7/Simulation-Chernobyl")
+                    webbrowser.open(r"https://github.com/mzivic7/SimulationChernobyl")
                 # if 680 < mouse[0] < 711 and 255 < mouse[1] < 286:   # open wiki link
                     # webbrowser.open(r"")   # ###
                 if 680 < mouse[0] < 711 and 289 < mouse[1] < 320:   # open report bug link
-                    webbrowser.open(r"https://github.com/mzivic7/Simulation-Chernobyl/issues")
+                    webbrowser.open(r"https://github.com/mzivic7/SimulationChernobyl/issues")
             
             # show records
             if rec_show is True:

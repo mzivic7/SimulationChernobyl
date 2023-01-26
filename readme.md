@@ -5,8 +5,8 @@ Written in Python with PyGame.
 
 ## Building
 ### Linux
-1. Clone this repositiry: `git clone https://github.com/mzivic7/Simulation-Chernobyl.git`
-2. `cd Simulation-Chernobyl`
+1. Clone this repositiry: `git clone https://github.com/mzivic7/SimulationChernobyl.git`
+2. `cd SimulationChernobyl`
 3. Install requirements: `pip install -r requirements.txt`
 4. run build script: `python3 build.py`
 ### Windows
