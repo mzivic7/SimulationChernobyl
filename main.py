@@ -24,7 +24,7 @@ screens = screens.Screens()
 ###### record select zoom, focus, help
 ##### zoom graph and record x
 ##### graph line height multiplyer in picker
-### auto scale graph 
+### auto scale graph
 
 ######### engine
 ######## main interface
@@ -33,7 +33,7 @@ screens = screens.Screens()
 ## icon
 
 version = "Pre-alpha 0.2.2"
-date = "(30.1.2022)" 
+date = "(30.1.2022)"
 
 
 
@@ -97,8 +97,8 @@ grapher.set_line_color(graph_line_num, colors_graph)   # update line colors
 ###### --Load settings-- ######
 try:
     antial, sound_volume, zoom, lang = fileops.load_settings()   # try to load settings from file
-except:
-    setfile = open("data/settings.txt","w+")   # create settings file
+except Exception:
+    setfile = open("data/settings.txt", "w+")   # create settings file
     setfile.write(str(antial)+' '+str(sound_volume)+' '+str(zoom)+' '+lang+' ')   # write to settings file
     setfile.close()   # close file
     whelp = True   # Show help
@@ -108,8 +108,10 @@ except:
 
 ###### --Load texts-- ######
 languages = np.loadtxt("txt/languages.txt", dtype='str')   # languages list
-with open("txt/"+lang+"/texts.txt") as texts: texts_arr = texts.readlines()   # texts
-with  open("txt/"+lang+"/about.txt") as fabout_txt: about_txt = fabout_txt.readlines()   # about text
+with open("txt/"+lang+"/texts.txt") as texts:
+    texts_arr = texts.readlines()   # texts
+with open("txt/"+lang+"/about.txt") as fabout_txt:
+    about_txt = fabout_txt.readlines()   # about text
 about_txt[0] = about_txt[0].rstrip() + " " + version
 about_txt[1] = date
 
@@ -117,6 +119,7 @@ about_txt[1] = date
 
 ###### --initialize GUI-- ######
 pygame.init()   # initialize pygame
+pygame.display.set_caption('Simulation Chernobyl')
 pygame.display.set_icon(pygame.image.load('img/icon.png'))   # set game icon
 screen = pygame.display.set_mode((windowx, windowy))   # set window size
 gui = pygame.image.load("img/gui.png")
@@ -144,10 +147,13 @@ while run:
     for e in pygame.event.get():
         if e.type == pygame.KEYDOWN:   # if any key is pressed:
             # --Key setup-- #
-            if e.key == pygame.K_ESCAPE: run = False  # if "escape" key is pressed, close program
+            if e.key == pygame.K_ESCAPE:
+                run = False  # if "escape" key is pressed, close program
             if e.key == pygame.K_p:   # if "P" key is pressed:
-                if pause is False: pause = True   # if it is not paused, pause it 
-                else: pause = False  # if it is paused, unpause it
+                if pause is False:
+                    pause = True   # if it is not paused, pause it
+                else:
+                    pause = False  # if it is paused, unpause it
         
         
         
@@ -158,40 +164,52 @@ while run:
             # main menu
             if settings is False and whelp is False and wabout is False and graph_picker is False and rec_show is False:
                 if 177 < mouse[0] < 207 and 1 < mouse[1] < 31:   # start / stop
-                    if pause is False: 
+                    if pause is False:
                         pause = True    # pause
                         logger.log_add("Paused", rgb.red)   # GUI logger example
-                    else: 
+                    else:
                         pause = False   # unpause
                         logger.log_add("Unpaused", rgb.lime)   # GUI logger example
                 if 177 < mouse[0] < 207 and 32 < mouse[1] < 62:   # record
-                    if record is False: 
+                    if record is False:
                         record = True    # start
                         grapher.record_start(names_rec, colors_rec)   # start recording
-                        logger.log_add("Recording started") 
-                    else: 
+                        logger.log_add("Recording started")
+                    else:
                         record = False   # stop
                         grapher.record_stop()   # stop recording
                         logger.log_add("Recording stopped. Saved in records directory.")
                 if 208 < mouse[0] < 238 and 1 < mouse[1] < 31:   # sound
-                    if sound is False: sound = True    # unmute
-                    else: sound = False   # mute
-                if 208 < mouse[0] < 238 and 32 < mouse[1] < 62: rec_show = pause = True   # show recorded
+                    if sound is False:
+                        sound = True    # unmute
+                    else:
+                        sound = False   # mute
+                if 208 < mouse[0] < 238 and 32 < mouse[1] < 62:
+                    rec_show = pause = True   # show recorded
                 if 239 < mouse[0] < 269 and 32 < mouse[1] < 62:   # simulation speed minus
                     if simspeed >= 0.15:   # if simulation speed is over minimal:
-                        if simspeed <= 1.2: simspeed -= 0.1   # if simspeed is bellow 1.2 decrease by 0.1
-                        if simspeed > 1.2: simspeed -= 0.2   #if simspeed is above 1.2 decrease by 0.2
+                        if simspeed <= 1.2:
+                            simspeed -= 0.1   # if simspeed is bellow 1.2 decrease by 0.1
+                        if simspeed > 1.2:
+                            simspeed -= 0.2   # if simspeed is above 1.2 decrease by 0.2
                         pygame.time.set_timer(pygame.USEREVENT, int(100/simspeed))   # update simspeed
                 if 332 < mouse[0] < 362 and 32 < mouse[1] < 62:   # simulation speed plus
                     if simspeed <= 9.9:
-                        if simspeed < 1.2: simspeed += 0.1
-                        if simspeed >= 1.2: simspeed += 0.2
+                        if simspeed < 1.2:
+                            simspeed += 0.1
+                        if simspeed >= 1.2:
+                            simspeed += 0.2
                         pygame.time.set_timer(pygame.USEREVENT, int(100/simspeed))
-                if 425 < mouse[0] < 455 and 1 < mouse[1] < 31: settings = pause = True  # switch to settings
-                if 363 < mouse[0] < 393 and 1 < mouse[1] < 31: graph_picker = pause = True   # switch to graph picker
-                if 425 < mouse[0] < 455 and 32 < mouse[1] < 62: whelp = pause = True   # switch to help
-                if 456 < mouse[0] < 486 and 32 < mouse[1] < 62: wabout = pause = True   # switch to about
-                if 456 < mouse[0] < 486 and 1 < mouse[1] < 31: run = False   # quit
+                if 425 < mouse[0] < 455 and 1 < mouse[1] < 31:
+                    settings = pause = True  # switch to settings
+                if 363 < mouse[0] < 393 and 1 < mouse[1] < 31:
+                    graph_picker = pause = True   # switch to graph picker
+                if 425 < mouse[0] < 455 and 32 < mouse[1] < 62:
+                    whelp = pause = True   # switch to help
+                if 456 < mouse[0] < 486 and 32 < mouse[1] < 62:
+                    wabout = pause = True   # switch to about
+                if 456 < mouse[0] < 486 and 1 < mouse[1] < 31:
+                    run = False   # quit
             
             # graph picker
             if graph_picker is True:
@@ -209,10 +227,10 @@ while run:
                         if cur_color == len(rgb.all_main) - 1:   # if this is last color in list:
                             cur_color = -1   # rotate to start (-1 becouse later it will be returned to 0)
                         val_colors[num] = rgb.all_main[cur_color + 1]   # move to next color in array
-                graph_line_num = len(np.delete(will_graph, np.where(will_graph == False)))   # new number of graph lines
+                graph_line_num = len(np.delete(will_graph, np.where(will_graph is False)))   # new number of graph lines
                 vals_graph = np.zeros(graph_line_num)   # empty list of vals to be on graph
                 colors_graph = np.zeros(graph_line_num, dtype=object)   # resize output color list
-                rec_num = len(np.delete(will_rec, np.where(will_rec == False)))   # new number of vals to be recorded
+                rec_num = len(np.delete(will_rec, np.where(will_rec is False)))   # new number of vals to be recorded
                 vals_rec = np.zeros(rec_num)   # empty list of vals to be recorded
                 names_rec = np.zeros(rec_num, dtype=object)   # empty list of val names to be recorded
                 colors_rec = np.zeros(rec_num, dtype=object)   # resize record color list
@@ -220,13 +238,13 @@ while run:
                     graph_picker = False   # back
                     num_out = 0   # iterable value for output list
                     for num, check in enumerate(will_rec):   # iterate over all variables
-                        if check == True:   # if this value is marked to be recorded:
+                        if check is True:   # if this value is marked to be recorded:
                             colors_rec[num_out] = tuple(val_colors[num])   # add its color to output list
                             names_rec[num_out] = val_names[num]   # add its name to output list
                             num_out += 1   # iterate output list
                     num_out = 0   # iterable value for output list
                     for num, check in enumerate(will_graph):   # iterate over all variables
-                        if check == True:   # if this value is marked to be plotted:
+                        if check is True:   # if this value is marked to be plotted:
                             colors_graph[num_out] = val_colors[num]   # add its color to output list
                             num_out += 1   # iterate output list
                     grapher.set_line_color(graph_line_num, colors_graph)   # update grapher colors
@@ -242,33 +260,44 @@ while run:
                     antial, sound_volume, zoom, lang = fileops.load_settings()   # reload settings from file
                 if 456 < mouse[0] < 486 and 32 < mouse[1] < 62:   # save settings
                     settings = False   # exit settings
-                    setfile = open("data/settings.txt","w+")   # open settings file
+                    setfile = open("data/settings.txt", "w+")   # open settings file
                     setfile.write(str(antial)+' '+str(sound_volume)+' '+str(zoom)+' '+lang+' ')   # write to settings file
                     setfile.close()   # close file
                 if 177 < mouse[0] < 207 and 1 < mouse[1] < 31:    # turn on antialias
-                    if antial is False: antial = True
-                    else: antial = False   # turn off antial
-                if 208 < mouse[0] < 238 and 1 < mouse[1] < 31 and sound_volume > 1: sound_volume -= 1  # sound volume minus
-                if 301 < mouse[0] < 331 and 1 < mouse[1] < 31 and sound_volume < 10: sound_volume += 1  # sound volume plus
-                if 208 < mouse[0] < 238 and 32 < mouse[1] < 62 and zoom > 1: zoom -= 1   # zoom minus
-                if 301 < mouse[0] < 331 and 32 < mouse[1] < 62 and zoom < 5: zoom += 1   # zoom plus
+                    if antial is False:
+                        antial = True
+                    else:
+                        antial = False   # turn off antial
+                if 208 < mouse[0] < 238 and 1 < mouse[1] < 31 and sound_volume > 1:
+                    sound_volume -= 1  # sound volume minus
+                if 301 < mouse[0] < 331 and 1 < mouse[1] < 31 and sound_volume < 10:
+                    sound_volume += 1  # sound volume plus
+                if 208 < mouse[0] < 238 and 32 < mouse[1] < 62 and zoom > 1:
+                    zoom -= 1   # zoom minus
+                if 301 < mouse[0] < 331 and 32 < mouse[1] < 62 and zoom < 5:
+                    zoom += 1   # zoom plus
                 if 177 < mouse[0] < 207 and 32 < mouse[1] < 62:    # change language
                     lang = languages[lang_num]   # load language
-                    lang_num +=1   # iterate over languages
-                    if lang_num >= len(languages): lang_num = 0   # rotate lang num
+                    lang_num += 1   # iterate over languages
+                    if lang_num >= len(languages):
+                        lang_num = 0   # rotate lang num
                     logger.log_add(str((texts_arr[5]).rstrip()), rgb.black)   # print that simulation must restart
                     
             # help window
             if whelp is True:
                 if whelp_all is False:   # if help all is closed:
-                    if 177 < mouse[0] < 207 and 1 < mouse[1] < 31: whelp = False   # back
-                    if 208 < mouse[0] < 238 and 1 < mouse[1] < 31: whelp_all = True  # help all
-                if whelp_all is True: # if help all is open:
-                    if 177 < mouse[0] < 207 and 1 < mouse[1] < 31: whelp_all = False   # back
+                    if 177 < mouse[0] < 207 and 1 < mouse[1] < 31:
+                        whelp = False   # back
+                    if 208 < mouse[0] < 238 and 1 < mouse[1] < 31:
+                        whelp_all = True  # help all
+                if whelp_all is True:   # if help all is open:
+                    if 177 < mouse[0] < 207 and 1 < mouse[1] < 31:
+                        whelp_all = False   # back
                     
             # about window
             if wabout is True:
-                if 625 < mouse[0] < 656 and 16 < mouse[1] < 47: wabout = False   # back
+                if 625 < mouse[0] < 656 and 16 < mouse[1] < 47:
+                    wabout = False   # back
                 if 680 < mouse[0] < 711 and 222 < mouse[1] < 253:   # open github link
                     webbrowser.open(r"https://github.com/mzivic7/SimulationChernobyl")
                 # if 680 < mouse[0] < 711 and 255 < mouse[1] < 286:   # open wiki link
@@ -278,29 +307,32 @@ while run:
             
             # show records
             if rec_show is True:
-                if 0 < mouse[0] < 31 and 1 < mouse[1] < 31: rec_show = False   # back
-                if os.path.isdir("records") is False: os.mkdir("records")   # if there is no records dir: create it
+                if 0 < mouse[0] < 31 and 1 < mouse[1] < 31:
+                    rec_show = False   # back
+                if os.path.isdir("records") is False:
+                    os.mkdir("records")   # if there is no records dir: create it
                 records = os.listdir("records")   # get list of all records
                 if not records:   # if there are no files
                     rec_show = False   # dont show records menu
                     logger.log_add("There are no saved records.")
                 else:
                     for num in range(len(records)):   # for every file position:
-                        if 0 < mouse[0] < 200 and 31 + num * 31 < mouse[1] < 62 + num * 31: 
+                        if 0 < mouse[0] < 200 and 31 + num * 31 < mouse[1] < 62 + num * 31:
                             sel_record = num   # select record
-                    with open("records/" + records[sel_record]) as file: 
+                    with open("records/" + records[sel_record]) as file:
                         file_lines = file.readlines()   # read all lines in array
                         header_record = file_lines[0].replace("\n", "").replace("time,", "").split(",")   # read csv val names
                         color_record = file_lines[1]   # read csv val colors
-                    read_record = np.genfromtxt("records/" + records[sel_record], delimiter=',', skip_header = 2)   # read csv vals
+                    read_record = np.genfromtxt("records/" + records[sel_record], delimiter=',', skip_header=2)   # read csv vals
                     if len(read_record) == 0:   # if there are no data
-                        read_record = np.zeros([2,len(header_record) + 1])   # add zeros to prevent graph errors
+                        read_record = np.zeros([2, len(header_record) + 1])   # add zeros to prevent graph errors
                         color_record = '"(255, 255, 255),"' * len(header_record)   # color all lines white to hide them
                 if 31 < mouse[0] < 62 and 0 < mouse[1] < 31:   # save graph image
                     sub = screen.subsurface(pygame.Rect(201, 1, 1079, 719))
                     now_time = datetime.datetime.now()   # get current date and time
                     now_time_short = (now_time.strftime("%Y-%m-%d %H-%M-%S"))   # remove milliseconds
-                    if os.path.isdir("screenshots") is False: os.mkdir("screenshots")   # if there is no screenshots dir, create it
+                    if os.path.isdir("screenshots") is False:
+                        os.mkdir("screenshots")   # if there is no screenshots dir, create it
                     pygame.image.save(sub, "screenshots/Screenshot from " + now_time_short + ".png")   # save screenshot
                 if record is True:   # if recording is active:
                     record = False   # stop recording
@@ -329,7 +361,7 @@ while run:
                 
                 num_out = 0   # iterable value for output list
                 for num, check in enumerate(will_graph):
-                    if check == True:   # if this value is marked to be plotted:
+                    if check is True:   # if this value is marked to be plotted:
                         vals_graph[num_out] = vals[num]   # add it to output list
                         num_out += 1   # iterate output list
                 grapher.add_val(counter, vals_graph)   # add values to graph
@@ -337,7 +369,7 @@ while run:
                 num_out = 0   # iterable value for output list
                 if record is True:
                     for num, check in enumerate(will_rec):
-                        if check == True:   # if this value is marked to be plotted:
+                        if check is True:   # if this value is marked to be plotted:
                             vals_rec[num_out] = vals[num]   # add it to output list
                             num_out += 1   # iterate output list
                     grapher.rec_val(counter, vals_rec)   # record values to file
@@ -345,7 +377,8 @@ while run:
                 counter += counter_step   # iterate counter
                 counter = round(counter, 2)   # round counter to one decimal
         
-        if e.type == pygame.QUIT: run = False   # if exited, break loop
+        if e.type == pygame.QUIT:
+            run = False   # if exited, break loop
     
     
     

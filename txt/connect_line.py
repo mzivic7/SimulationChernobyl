@@ -21,18 +21,20 @@ for name_num, name in enumerate(names):   # for line in explanations matrix:
     name = name.split(' ')   # convert string to list of words
     name_out = ""   # reset output string
     for word in name:   # for word in list of words:
-        if word != "///": name_out += word + " "   # if word is not separator mark: add it to otput string
-        else: break   # if word is separator mark: break loop
+        if word != "///":
+            name_out += word + " "   # if word is not separator mark: add it to otput string
+        else:
+            break   # if word is separator mark: break loop
     names_out[name_num] = name_out.rstrip()   # add string to new line in names list, without whitespace on end
 
 # sort and split coordinates with names, by x position
 i_r = 0   # right group itterator
 i_l = 0   # left group itterator
-line_coords_r = np.zeros([len(objects), 7], dtype = object)   # right group empty matrix with int and string
-line_coords_l = np.zeros([len(objects), 7], dtype = object)   # left group empty matrix with int and string
+line_coords_r = np.zeros([len(objects), 7], dtype=object)   # right group empty matrix with int and string
+line_coords_l = np.zeros([len(objects), 7], dtype=object)   # left group empty matrix with int and string
 for line_num, line in enumerate(objects):   # for all lines in coords matrix:
     if np.all(line_num + 1 != filters):   # if line is not one of unwanted:
-        if line [4] >= separator:   # if object center is past separator:
+        if line[4] >= separator:   # if object center is past separator:
             line_coords_r[i_r, 0:6] = line   # write that line to right matrix
             line_coords_r[i_r, 6] = names_out[line_num]   # write corresponding name
             i_r += 1   # next column on output
